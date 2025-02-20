@@ -257,9 +257,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         {
             messageBuffer[rx_index] = '\0'; // Null-terminate the string
 
-            if (messageBuffer[1] == 'L' && messageBuffer[2] == 'o')
+            if (messageBuffer[1] == 'L' && messageBuffer[2] == 'o' && messageBuffer[3] == 'a' && messageBuffer[4] == 'd')
             {
                 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_8); // Toggle LED
+                //for (int i = 0; i < strlen(messageBuffer); i++) {
+                //HAL_UART_Transmit(&huart2, (uint8_t*)&messageBuffer[8], 1, HAL_MAX_DELAY);
+                //}
             }
 
             rx_index = 0; // Reset index for the next command
