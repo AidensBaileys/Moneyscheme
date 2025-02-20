@@ -15,10 +15,11 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
+/* USER CODE END Header
+ * . */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include <string.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -31,7 +32,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define LOAD_CMD "*Load#\n"
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -42,6 +43,7 @@
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart2;
 uint8_t rx_buffer[1];
+
 /* USER CODE BEGIN PV */
 uint8_t tx_StudentNo[11] = "*26628724#\n";
 /* USER CODE END PV */
@@ -97,6 +99,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   HAL_Delay(100);
   HAL_UART_Transmit(&huart2, tx_StudentNo, 11, 100);
+  //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
 
   while (1)
   {
@@ -242,8 +245,29 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	UNUSED(huart);
-	HAL_UART_Transmit(&huart2, rx_buffer, 1, 10);
+    static char messageBuffer[7]; // Buffer to store full command
+    static uint8_t rx_index = 0;
+
+    if (huart->Instance == USART2)
+    {
+        messageBuffer[rx_index++] = rx_buffer[0]; // Store received byte
+
+        // If newline is received, check the command
+        if (rx_buffer[0] == '\n')
+        {
+            messageBuffer[rx_index] = '\0'; // Null-terminate the string
+
+            if (messageBuffer[1] == 'L' && messageBuffer[2] == 'o')
+            {
+                HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_8); // Toggle LED
+            }
+
+            rx_index = 0; // Reset index for the next command
+        }
+
+        // Continue receiving next byte
+        HAL_UART_Receive_IT(&huart2, rx_buffer, 1);
+    }
 }
 /* USER CODE END 4 */
 
